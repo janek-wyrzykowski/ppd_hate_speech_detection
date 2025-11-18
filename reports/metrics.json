@@ -1,0 +1,27 @@
+{
+  "val_micro_f1": 0.6884899683210137,
+  "val_macro_f1": 0.5987267711811609,
+  "test_micro_f1": 0.5860433604336044,
+  "test_macro_f1": 0.4864525293518809,
+  "classifier": "logreg",
+  "vectorizer": {
+    "ngram_range": [
+      1,
+      2
+    ],
+    "max_features": 200000,
+    "min_df": 2
+  },
+  "val_micro_f1_tuned": 0.7240143369175627,
+  "val_macro_f1_tuned": 0.6441464623434233,
+  "test_micro_f1_tuned": 0.6026424768290278,
+  "test_macro_f1_tuned": 0.4643914168691075,
+  "thresholds": {
+    "toxic": 0.6240049330430405,
+    "severe_toxic": 0.7934720106678305,
+    "obscene": 0.5037658901606281,
+    "threat": 0.9474182448014528,
+    "insult": 0.6849432341306129,
+    "identity_hate": 0.6608315603207954
+  }
+}
