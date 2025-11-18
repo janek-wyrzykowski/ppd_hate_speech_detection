@@ -137,7 +137,10 @@ dmypy.json
 Thumbs.db
 
 # Data (if large, consider not committing)
-# data/raw/*.csv  # Uncomment if you don't want to commit large data files
+data/raw/train.csv
+data/raw/test.csv
+data/raw/test_labels.csv
+# Keep sample_submission.csv as it's small
 
 # Reports (generated files)
 reports/*.csv
