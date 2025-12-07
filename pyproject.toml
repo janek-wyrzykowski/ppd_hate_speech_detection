@@ -12,5 +12,7 @@ dependencies = [
     "pip>=25.3",
     "scikit-learn>=1.7.2",
     "seaborn>=0.13.2",
+    "tensorflow>=2.20.0",
     "wordcloud>=1.9.4",
+    "xgboost>=3.1.2",
 ]
