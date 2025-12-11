@@ -79,6 +79,7 @@ def main():
 
     train_loader = DataLoader(train_dataset, sampler=RandomSampler(train_dataset), batch_size=batch_size)
     val_loader = DataLoader(val_dataset, sampler=SequentialSampler(val_dataset), batch_size=batch_size)
+    test_dataloader = DataLoader(test_dataset, sampler = SequentialSampler(test_dataset), batch_size = batch_size)
 
     print(f"Train batches: {len(train_loader)}, Val batches: {len(val_loader)}")
 
@@ -205,10 +206,10 @@ def main():
             print(f"  Validation time:     {validation_time}")
 
             # Save best model
-            if avg_val_accuracy > best_val_acc:
-                best_val_acc = avg_val_accuracy
-                torch.save(model.state_dict(), "best_bert_state_dict.pt")
-                print(f"  New best model saved (val_acc={best_val_acc:.4f})")
+            # if avg_val_accuracy > best_val_acc:
+            #     best_val_acc = avg_val_accuracy
+            #     torch.save(model.state_dict(), "best_bert_state_dict.pt")
+            #     print(f"  New best model saved (val_acc={best_val_acc:.4f})")
 
             training_stats.append({
                 "epoch": epoch_i + 1,
@@ -234,6 +235,27 @@ def main():
     for s in training_stats:
         print(s)
 
+
+    # model.load_state_dict(torch.load("bert128.pt", map_location='cpu'))
+    model.eval()
+
+    predictions = []
+    train_bar = tqdm(test_dataloader, desc=f"Testing...")
+    for batch in train_bar:
+            b_input_ids = batch[0].to(device)
+            b_input_mask = batch[1].to(device)
+            with torch.no_grad():        
+                output= model(b_input_ids, 
+                            token_type_ids=None, 
+                            attention_mask=b_input_mask)
+                logits = output.logits
+                logits = logits.detach().cpu().numpy()
+                pred_flat = np.argmax(logits, axis=1).flatten()
+                
+                predictions.extend(list(pred_flat))
+
+    with open(f'BERTpred{max_length}.txt', 'w') as f:
+        f.write(f"{predictions}")
 
 if __name__ == "__main__":
     main()
