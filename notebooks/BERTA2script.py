@@ -10,6 +10,9 @@ from tqdm import tqdm
 
 
 def BERTAify(clean_df, tokenizer, max_length):
+    '''
+    Zmienia zbiór danych na ztokenizowany i akceptowny przez model BERT
+    '''
     input_ids = []
     attention_masks = []
     for comment in clean_df["comment_text"]:
@@ -44,9 +47,7 @@ def format_time(elapsed):
 
 def main():
 
-    # ============================================================
-    # CONFIG
-    # ============================================================
+    #podstawowe ustawienia
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
 
     data_train = "../data/df_train.csv"
@@ -58,9 +59,7 @@ def main():
     epochs = 3
     lr = 2e-5
 
-    # ============================================================
-    # LOAD DATA
-    # ============================================================
+    #ładownie danych
     clean_train = pd.read_csv(data_train)
     clean_val = pd.read_csv(data_val)
     clean_test = pd.read_csv(data_test)
@@ -83,9 +82,7 @@ def main():
 
     print(f"Train batches: {len(train_loader)}, Val batches: {len(val_loader)}")
 
-    # ============================================================
-    # SETUP MODEL
-    # ============================================================
+    # tworzenie modelu
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = BertForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=3)
     model.to(device)
@@ -102,7 +99,7 @@ def main():
         num_training_steps=total_steps
     )
 
-    # random seeds
+    # ziarna
     seed = 42
     random.seed(seed)
     np.random.seed(seed)
@@ -115,17 +112,12 @@ def main():
 
     total_t0 = time.time()
 
-    # ============================================================
-    # TRAINING LOOP
-    # ============================================================
+    # pętla ucząca
     try:
         for epoch_i in range(epochs):
 
             print(f"\n======== Epoch {epoch_i+1} / {epochs} ========")
 
-            # -----------------------------
-            # TRAINING
-            # -----------------------------
             model.train()
             total_train_loss = 0
             t0 = time.time()
@@ -162,9 +154,7 @@ def main():
             print(f"  Average training loss: {avg_train_loss:.4f}")
             print(f"  Training time:         {training_time}")
 
-            # -----------------------------
-            # VALIDATION
-            # -----------------------------
+            # walidacja
             model.eval()
             t0 = time.time()
 
@@ -205,12 +195,6 @@ def main():
             print(f"  Validation loss:     {avg_val_loss:.4f}")
             print(f"  Validation time:     {validation_time}")
 
-            # Save best model
-            # if avg_val_accuracy > best_val_acc:
-            #     best_val_acc = avg_val_accuracy
-            #     torch.save(model.state_dict(), "best_bert_state_dict.pt")
-            #     print(f"  New best model saved (val_acc={best_val_acc:.4f})")
-
             training_stats.append({
                 "epoch": epoch_i + 1,
                 "Training Loss": avg_train_loss,
@@ -236,7 +220,7 @@ def main():
         print(s)
 
 
-    # model.load_state_dict(torch.load("bert128.pt", map_location='cpu'))
+    # pętla testowa
     model.eval()
 
     predictions = []
@@ -254,6 +238,7 @@ def main():
                 
                 predictions.extend(list(pred_flat))
 
+    #zapisywanie wyników do pliku
     with open(f'BERTpred{max_length}.txt', 'w') as f:
         f.write(f"{predictions}")
 
