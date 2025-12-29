@@ -1,59 +1,61 @@
-# Detekcja mowy nienawiści
+# Detekcja Mowy Nienawiści - Projekt PPD
 
-Projekt polegający na detekcji mowy nienawiści w komentarzach z Wikipedii. Każdy komentarz jest klasyfikowany pod kątem:
-- toksyczności,
-- drastycznie toksycznych,
-- nieprzyzwoitości,
-- obecności gróźb,
-- obecności obelg,
-- nienawiści ze względu na tożsamość.
+Projekt polegający na detekcji mowy nienawiści w komentarzach z Wikipedii. Komentarze są klasyfikowane w 3 kategoriach:
 
-Celem tego projektu jest stworzenie kilku modeli klasyfikujących komentarze w kategorii toksyczności oraz porównanie skuteczności modelu ze skutecznością popularnych LLMów.
+- **0**: nietoksyczny (non-toxic)
+- **1**: toksyczny (toxic)
+- **2**: bardzo toksyczny (severely-toxic)
 
-### Środowisko
+**Modele porównywane:**
 
-W celu utrzymania odtwarzalnego środowiska w tym projekcie wykorzystany jest `uv`. Należy go zainstalować za pomocą jednej z poniższych komend:
+- Baseline: TF-IDF + Logistic Regression
+- XGBoost: Embeddings + XGBoost
+- BERT: Fine-tuned BERT
+- LLM: Groq API (Llama 3.1 70B)
 
-```sh
-# Linux/MacOS
+**Metryki:** Accuracy, Macro-F1 (główna), ROC-AUC, Confusion Matrix
+
+## Uruchomienie
+
+Główny notebook projektu: [`notebooks/ppd_projekt.ipynb`](notebooks/ppd_projekt.ipynb)
+
+Zawiera kompletny pipeline:
+
+1. EDA - analiza danych
+2. Przygotowanie danych i split
+3. Trenowanie wszystkich modeli
+4. Ewaluacja i porównanie
+5. Analiza błędów
+
+### Wymagania
+
+```bash
+# Zainstaluj uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
-# lub
-wget -qO- https://astral.sh/uv/install.sh | sh
-```
 
-```powershell
-# Windows
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-Alternatywne metody:
-
-```sh
-pip install uv
-```
-
-```sh
-brew install uv
-```
-
-```powershell
-# Windows
-winget install --id=astral-sh.uv  -e
-```
-
-Następnie należy zsynchronizować środowisko za pomocą komendy
-
-```
+# Zsynchronizuj środowisko
 uv sync
+
+# Dla LLM (opcjonalne) - ustaw klucz API
+export GROQ_API_KEY="your-key-here"
 ```
 
-W celu dodania nowych pakietów należy wykonać poniższe komendy:
+### Struktura projektu
 
 ```
-uv add <nazwa-pakietu>
-uv lock
+├── data/                    # Dane treningowe/testowe
+│   ├── raw/                # Surowe dane z Kaggle
+│   ├── df_train.csv        # Zbiór treningowy
+│   ├── df_val.csv          # Zbiór walidacyjny
+│   ├── df_test.csv         # Zbiór testowy
+│   └── df_test_sample.csv  # Próbka testowa (500 próbek)
+├── notebooks/
+│   ├── ppd_projekt.ipynb   # Główny notebook
+│   ├── BERTpred*.txt       # Predykcje BERT
+│   └── BERTA*.py          # Skrypty BERT
+└── reports/               # Wyniki i wykresy
 ```
 
-### Dane
+### Wyniki
 
-Wykorzystane w projekcie dane zostały pobrane ze strony https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/data i znajdują się one w folderze `data/raw`. Modele są jednak trenowane, walidowane i testowane na wybranych podzbiorach tych danych. Zostały one przygotowane z pomocą skryptu `scripts/split.ipynb` i znajdują się w folderze `data/selected`.
+Wyniki porównania modeli są dostępne w folderze `reports/` po uruchomieniu notebooka.
