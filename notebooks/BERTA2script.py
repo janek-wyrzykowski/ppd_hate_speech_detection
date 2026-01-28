@@ -44,6 +44,12 @@ def format_time(elapsed):
     elapsed_rounded = int(round(elapsed))
     return str(datetime.timedelta(seconds=elapsed_rounded))
 
+def softmax_np(x):
+    maxes = np.max(x, axis=1, keepdims=True)[0]
+    x_exp = np.exp(x-maxes)
+    x_exp_sum = np.sum(x_exp, 1, keepdims=True)
+    probs = x_exp/x_exp_sum
+    return probs
 
 def main():
 
@@ -55,8 +61,8 @@ def main():
     data_test = "../data/df_test.csv"
 
     batch_size = 32
-    max_length = 64
-    epochs = 3
+    max_length = 32
+    epochs = 1
     lr = 2e-5
 
     #ładownie danych
@@ -224,6 +230,7 @@ def main():
     model.eval()
 
     predictions = []
+    probabilities = None
     train_bar = tqdm(test_dataloader, desc=f"Testing...")
     for batch in train_bar:
             b_input_ids = batch[0].to(device)
@@ -235,12 +242,20 @@ def main():
                 logits = output.logits
                 logits = logits.detach().cpu().numpy()
                 pred_flat = np.argmax(logits, axis=1).flatten()
-                
+                probs = softmax_np(logits)
+
                 predictions.extend(list(pred_flat))
+                # TODO replace with probabilities
+                if probabilities is not None:
+                    probabilities = np.vstack((probabilities, probs))
+                else:
+                    probabilities = probs
 
     #zapisywanie wyników do pliku
     with open(f'BERTpred{max_length}.txt', 'w') as f:
         f.write(f"{predictions}")
+    with open(f'BERTprob{max_length}.npy', 'w') as f:
+        np.savetxt(f, probabilities, fmt="%.9e")
 
 if __name__ == "__main__":
     main()
